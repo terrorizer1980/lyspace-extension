@@ -1,0 +1,20 @@
+{
+  "manifest_version": 2,
+  "name": "Lyspace",
+  "version": "0.1",
+  "description": "Just lyspace for now",
+  "permissions": ["<all_urls>", "tabs", "webNavigation"],
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["content_scripts/youtube.js"]
+    }
+  ],
+  "browser_action": {
+    "default_title": "Lyspace",
+    "default_popup": "dist/index.html"
+  },
+  "background": {
+    "scripts": ["background.js"]
+  }
+}
