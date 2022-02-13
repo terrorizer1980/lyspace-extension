@@ -1,4 +1,5 @@
-import * as browser from "webextension-polyfill";
+import browser from "webextension-polyfill";
+import liveButton from "./components/live-button";
 
 const ownerRenderer = document.getElementsByTagName("ytd-video-owner-renderer");
 
@@ -14,21 +15,36 @@ const getChannelId = (/** @type {Element | Null} */ element) => {
 const trackingTimerHandler = (/** @type {Function} */ callback) => {
   const element = ownerRenderer[0]?.getElementsByTagName("ytd-channel-name")[0];
 
-  console.log("ME:", getChannelId(element));
-
   if (!Boolean(element)) {
     setTimeout(trackingTimerHandler, 3000, callback);
   } else {
-    callback(getChannelId(element));
+    callback(element);
   }
 };
 
-trackingTimerHandler((/** @type {String} */ channelId) => {
-  console.log("ME:", channelId);
-});
+const ownerNameChangeHandler = (/** @type {Element} */ element) => {
+  const channelId = getChannelId(element);
+
+  element.appendChild(
+    liveButton({
+      service: Math.floor(Math.random() * 10) % 2 ? "twitch" : "youtube",
+    })
+  );
+};
+
+trackingTimerHandler(ownerNameChangeHandler);
+
+const removeExistingLiveNowButtons = () => {
+  const lyspaceButtons = ownerRenderer[0]
+    ?.getElementsByTagName("ytd-channel-name")[0]
+    .getElementsByTagName("lyspace-button");
+
+  for (const lyspaceButton of lyspaceButtons) {
+    lyspaceButton.parentElement?.removeChild(lyspaceButton);
+  }
+};
 
 browser.runtime.onMessage.addListener(function (message, sender) {
-  trackingTimerHandler((/** @type {String} */ channelId) => {
-    console.log("TE:", channelId);
-  });
+  removeExistingLiveNowButtons();
+  trackingTimerHandler(ownerNameChangeHandler);
 });
