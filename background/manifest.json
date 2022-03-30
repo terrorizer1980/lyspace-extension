@@ -10,6 +10,10 @@
       "js": ["content_scripts/youtube.js"]
     }
   ],
+  "icons": {
+    "48": "icons/lyspace-logo-48.png",
+    "96": "icons/lyspace-logo-96.png"
+  },
   "browser_action": {
     "default_title": "Lyspace",
     "default_popup": "dist/index.html"

@@ -11,6 +11,10 @@ module.exports = {
           from: "./manifest.json",
           to: "../extension",
         },
+        {
+          from: "./icons",
+          to: "../extension/icons",
+        }
       ],
     }),
   ],
