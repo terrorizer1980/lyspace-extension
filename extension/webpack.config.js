@@ -9,12 +9,12 @@ module.exports = {
       patterns: [
         {
           from: "./manifest.json",
-          to: "../extension",
+          to: "../dist",
         },
         {
           from: "./icons",
-          to: "../extension/icons",
-        }
+          to: "../dist/icons",
+        },
       ],
     }),
   ],
@@ -24,6 +24,6 @@ module.exports = {
   },
   output: {
     filename: "[name].js",
-    path: path.resolve(__dirname, "../extension/"),
+    path: path.resolve(__dirname, "../dist/"),
   },
 };

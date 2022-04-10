@@ -4,7 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "webpack"
+    "build": "webpack build",
+    "build:watch": "webpack build --watch"
   },
   "devDependencies": {
     "@types/webextension-polyfill": "^0.8.2",

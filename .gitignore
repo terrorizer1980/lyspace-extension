@@ -1,5 +1,4 @@
 node_modules
 dist
-extension
 yarn.lock
 package-lock.json
