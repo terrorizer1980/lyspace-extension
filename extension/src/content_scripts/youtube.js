@@ -1,6 +1,8 @@
 import browser from "webextension-polyfill";
 import liveButton from "./components/live-button";
 
+console.log("Lyspace loaded");
+
 const ownerRenderer = document.getElementsByTagName("ytd-video-owner-renderer");
 
 const getChannelId = (/** @type {Element | Null} */ element) => {
@@ -13,7 +15,15 @@ const getChannelId = (/** @type {Element | Null} */ element) => {
 };
 
 const trackingTimerHandler = (/** @type {Function} */ callback) => {
-  const element = ownerRenderer[0]?.getElementsByTagName("ytd-channel-name")[0];
+  const elements = document.evaluate(
+    "//ytd-video-owner-renderer//child::ytd-channel-name",
+    document,
+    null,
+    XPathResult.FIRST_ORDERED_NODE_TYPE,
+    null
+  );
+
+  const element = elements.singleNodeValue;
 
   if (!Boolean(element)) {
     setTimeout(trackingTimerHandler, 3000, callback);
@@ -45,6 +55,18 @@ const removeExistingLiveNowButtons = () => {
 };
 
 browser.runtime.onMessage.addListener(function (message, sender) {
-  removeExistingLiveNowButtons();
-  trackingTimerHandler(ownerNameChangeHandler);
+  switch (message.type) {
+    case "videoDetails": {
+      const payload = JSON.parse(message.payload);
+
+      console.log(payload);
+      console.log(payload?.videoDetails?.channelId);
+      break;
+    }
+    case "youtubeWatchUrl": {
+      removeExistingLiveNowButtons();
+      trackingTimerHandler(ownerNameChangeHandler);
+      break;
+    }
+  }
 });

@@ -3,11 +3,12 @@
   "name": "Lyspace",
   "version": "0.1",
   "description": "Just lyspace for now",
-  "permissions": ["<all_urls>", "tabs", "webNavigation"],
+  "permissions": ["*://youtube.com/*", "tabs", "webRequest", "webRequestBlocking", "webNavigation"],
   "content_scripts": [
     {
       "matches": ["*://*.youtube.com/*"],
-      "js": ["content_scripts/youtube.js"]
+      "js": ["content_scripts/youtube.js"],
+      "run_at": "document_end"
     }
   ],
   "icons": {
