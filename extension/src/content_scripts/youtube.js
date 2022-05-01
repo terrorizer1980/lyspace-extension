@@ -3,18 +3,7 @@ import liveButton from "./components/live-button";
 
 console.log("Lyspace loaded");
 
-const ownerRenderer = document.getElementsByTagName("ytd-video-owner-renderer");
-
-const getChannelId = (/** @type {Element | Null} */ element) => {
-  const channelRoute = element
-    ?.getElementsByTagName("a")[0]
-    .getAttribute("href")
-    ?.match(/channel\/(.*)/g);
-
-  return String(channelRoute?.[0]).split("/")[1];
-};
-
-const trackingTimerHandler = (/** @type {Function} */ callback) => {
+const getChannelNameElement = () => {
   const elements = document.evaluate(
     "//ytd-video-owner-renderer//child::ytd-channel-name",
     document,
@@ -23,17 +12,22 @@ const trackingTimerHandler = (/** @type {Function} */ callback) => {
     null
   );
 
-  const element = elements.singleNodeValue;
-
-  if (!Boolean(element)) {
-    setTimeout(trackingTimerHandler, 3000, callback);
-  } else {
-    callback(element);
-  }
+  return elements.singleNodeValue;
 };
 
-const ownerNameChangeHandler = (/** @type {Element} */ element) => {
-  const channelId = getChannelId(element);
+const getChannelId = () => {
+  const element = getChannelNameElement();
+
+  const channelRoute = element
+    ?.getElementsByTagName("a")[0]
+    .getAttribute("href")
+    ?.match(/channel\/(.*)/g);
+
+  return String(channelRoute?.[0]).split("/")[1];
+};
+
+const ownerNameChangeHandler = () => {
+  const element = getChannelNameElement();
 
   element.appendChild(
     liveButton({
@@ -42,31 +36,47 @@ const ownerNameChangeHandler = (/** @type {Element} */ element) => {
   );
 };
 
-trackingTimerHandler(ownerNameChangeHandler);
-
 const removeExistingLiveNowButtons = () => {
-  const lyspaceButtons = ownerRenderer[0]
-    ?.getElementsByTagName("ytd-channel-name")[0]
-    .getElementsByTagName("lyspace-button");
-
-  for (const lyspaceButton of lyspaceButtons) {
-    lyspaceButton.parentElement?.removeChild(lyspaceButton);
+  const lyspaceButtons = document.getElementsByTagName("lyspace-button");
+  while (lyspaceButtons.length > 0) {
+    lyspaceButtons[0].remove();
   }
 };
 
 browser.runtime.onMessage.addListener(function (message, sender) {
   switch (message.type) {
-    case "videoDetails": {
-      const payload = JSON.parse(message.payload);
+    case "playerLoaded": {
+      removeExistingLiveNowButtons();
 
-      console.log(payload);
-      console.log(payload?.videoDetails?.channelId);
+      if (window.location.href.indexOf("youtube.com/watch") !== -1) {
+        setTimeout(() => {
+          const channelId = getChannelId();
+          console.log(channelId);
+          ownerNameChangeHandler();
+        }, 1000);
+      }
+
       break;
     }
     case "youtubeWatchUrl": {
       removeExistingLiveNowButtons();
-      trackingTimerHandler(ownerNameChangeHandler);
       break;
     }
   }
+});
+
+// Initially, take channelId from the meta tag
+window.addEventListener("load", (_) => {
+  const elements = document.evaluate(
+    "//meta[@itemprop='channelId']",
+    document,
+    null,
+    XPathResult.FIRST_ORDERED_NODE_TYPE,
+    null
+  );
+
+  const element = elements.singleNodeValue;
+  console.log(element.getAttribute("content"));
+
+  ownerNameChangeHandler();
 });
