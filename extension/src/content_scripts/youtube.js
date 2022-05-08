@@ -1,7 +1,14 @@
 import browser from "webextension-polyfill";
 import liveButton from "./components/live-button";
+import { getLiveStreamsQuery } from "./query";
+import { createClient, defaultExchanges } from "@urql/core";
 
 console.log("Lyspace loaded");
+
+const client = createClient({
+  url: 'https://gql.lyspace.co',
+  exchanges: defaultExchanges,
+});
 
 const getChannelNameElement = () => {
   const elements = document.evaluate(
@@ -26,12 +33,12 @@ const getChannelId = () => {
   return String(channelRoute?.[0]).split("/")[1];
 };
 
-const ownerNameChangeHandler = () => {
+const addYouTubeLiveButton = ({ liveStream }) => {
   const element = getChannelNameElement();
 
   element.appendChild(
     liveButton({
-      service: Math.floor(Math.random() * 10) % 2 ? "twitch" : "youtube",
+      liveStream
     })
   );
 };
@@ -43,6 +50,22 @@ const removeExistingLiveNowButtons = () => {
   }
 };
 
+const getLiveStreams = ({ channelId }) => {
+  client
+    .query(getLiveStreamsQuery, { channelId })
+    .toPromise()
+    .then((val) => {
+      if(val.data.liveStreamQuery.livestreams){
+        const liveStream = val.data.liveStreamQuery.livestreams[0];
+
+        addYouTubeLiveButton({ liveStream });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+    })
+}
+
 browser.runtime.onMessage.addListener(function (message, sender) {
   switch (message.type) {
     case "playerLoaded": {
@@ -51,8 +74,8 @@ browser.runtime.onMessage.addListener(function (message, sender) {
       if (window.location.href.indexOf("youtube.com/watch") !== -1) {
         setTimeout(() => {
           const channelId = getChannelId();
-          console.log(channelId);
-          ownerNameChangeHandler();
+
+          getLiveStreams({ channelId });
         }, 1000);
       }
 
@@ -65,7 +88,7 @@ browser.runtime.onMessage.addListener(function (message, sender) {
   }
 });
 
-// Initially, take channelId from the meta tag
+// If page is directly loaded, then take channelId from meta tags
 window.addEventListener("load", (_) => {
   const elements = document.evaluate(
     "//meta[@itemprop='channelId']",
@@ -76,7 +99,7 @@ window.addEventListener("load", (_) => {
   );
 
   const element = elements.singleNodeValue;
-  console.log(element.getAttribute("content"));
+  const channelId = element.getAttribute("content");
 
-  ownerNameChangeHandler();
+  getLiveStreams({ channelId });
 });

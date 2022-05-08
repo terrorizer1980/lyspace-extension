@@ -1,3 +1,7 @@
+const getLiveStreamUrl = ({ liveStream }) => {
+  return `https://youtube.com/watch/${liveStream?.videoId}`
+}
+
 /**
  * Return Lyspace button depending on the service.
  *
@@ -5,9 +9,15 @@
  * @param {String} data.service
  *
  */
-module.exports = ({ service }) => {
+module.exports = ({ liveStream }) => {
   const lyspaceButton = document.createElement("lyspace-button");
   const button = document.createElement("div");
+  const anchor = document.createElement("a");
+
+  anchor.setAttribute("href", getLiveStreamUrl({ liveStream }));
+  anchor.setAttribute("target", "_blank");
+  anchor.style.textDecoration = "none"
+
   button.innerText += "LIVE NOW";
 
   button.style.color = "white";
@@ -16,15 +26,17 @@ module.exports = ({ service }) => {
   button.style.padding = "0px 5px";
   button.style.borderRadius = "2px";
 
-  switch (service) {
-    case "twitch":
+  switch (liveStream.serviceName) {
+    case "TWITCH":
       button.style.backgroundColor = "#9147FF";
       break;
     default:
       button.style.backgroundColor = "#DC143C";
   }
 
-  lyspaceButton.appendChild(button);
+  anchor.appendChild(button);
+
+  lyspaceButton.appendChild(anchor);
 
   return lyspaceButton;
 };
