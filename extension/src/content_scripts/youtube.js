@@ -6,7 +6,7 @@ import { createClient, defaultExchanges } from "@urql/core";
 console.log("Lyspace loaded");
 
 const client = createClient({
-  url: 'https://gql.lyspace.co',
+  url: "https://gql.lyspace.co",
   exchanges: defaultExchanges,
 });
 
@@ -38,7 +38,7 @@ const addYouTubeLiveButton = ({ liveStream }) => {
 
   element.appendChild(
     liveButton({
-      liveStream
+      liveStream,
     })
   );
 };
@@ -55,7 +55,7 @@ const getLiveStreams = ({ channelId }) => {
     .query(getLiveStreamsQuery, { channelId })
     .toPromise()
     .then((val) => {
-      if(val.data.liveStreamQuery.livestreams){
+      if (val.data.liveStreamQuery.livestreams) {
         const liveStream = val.data.liveStreamQuery.livestreams[0];
 
         addYouTubeLiveButton({ liveStream });
@@ -63,8 +63,8 @@ const getLiveStreams = ({ channelId }) => {
     })
     .catch((err) => {
       console.log(err);
-    })
-}
+    });
+};
 
 browser.runtime.onMessage.addListener(function (message, sender) {
   switch (message.type) {
