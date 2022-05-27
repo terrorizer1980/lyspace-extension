@@ -6,9 +6,16 @@ import { createClient, defaultExchanges } from "@urql/core";
 console.log("Lyspace loaded");
 
 const client = createClient({
-  url: 'https://gql.lyspace.co',
+  url: "https://gql.lyspace.co",
   exchanges: defaultExchanges,
 });
+
+const getVideoIdFromElement = () => {
+  const videoIdRegex = RegExp("watch\\?v=(.*)&*", "g");
+  const videoId = videoIdRegex.exec(window.location.href)[1];
+
+  return videoId;
+};
 
 const getChannelNameElement = () => {
   const elements = document.evaluate(
@@ -22,23 +29,12 @@ const getChannelNameElement = () => {
   return elements.singleNodeValue;
 };
 
-const getChannelId = () => {
-  const element = getChannelNameElement();
-
-  const channelRoute = element
-    ?.getElementsByTagName("a")[0]
-    .getAttribute("href")
-    ?.match(/channel\/(.*)/g);
-
-  return String(channelRoute?.[0]).split("/")[1];
-};
-
 const addYouTubeLiveButton = ({ liveStream }) => {
   const element = getChannelNameElement();
 
   element.appendChild(
     liveButton({
-      liveStream
+      liveStream,
     })
   );
 };
@@ -50,12 +46,12 @@ const removeExistingLiveNowButtons = () => {
   }
 };
 
-const getLiveStreams = ({ channelId }) => {
+const getLiveStreams = ({ targetId }) => {
   client
-    .query(getLiveStreamsQuery, { channelId })
+    .query(getLiveStreamsQuery, { targetId })
     .toPromise()
     .then((val) => {
-      if(val.data.liveStreamQuery.livestreams){
+      if (val.data.liveStreamQuery.livestreams) {
         const liveStream = val.data.liveStreamQuery.livestreams[0];
 
         addYouTubeLiveButton({ liveStream });
@@ -63,21 +59,17 @@ const getLiveStreams = ({ channelId }) => {
     })
     .catch((err) => {
       console.log(err);
-    })
-}
+    });
+};
 
-browser.runtime.onMessage.addListener(function (message, sender) {
+browser.runtime.onMessage.addListener((message, sender) => {
   switch (message.type) {
     case "playerLoaded": {
       removeExistingLiveNowButtons();
 
-      if (window.location.href.indexOf("youtube.com/watch") !== -1) {
-        setTimeout(() => {
-          const channelId = getChannelId();
+      const videoId = getVideoIdFromElement();
 
-          getLiveStreams({ channelId });
-        }, 1000);
-      }
+      getLiveStreams({ targetId: videoId });
 
       break;
     }
@@ -90,16 +82,6 @@ browser.runtime.onMessage.addListener(function (message, sender) {
 
 // If page is directly loaded, then take channelId from meta tags
 window.addEventListener("load", (_) => {
-  const elements = document.evaluate(
-    "//meta[@itemprop='channelId']",
-    document,
-    null,
-    XPathResult.FIRST_ORDERED_NODE_TYPE,
-    null
-  );
-
-  const element = elements.singleNodeValue;
-  const channelId = element.getAttribute("content");
-
-  getLiveStreams({ channelId });
+  const videoId = getVideoIdFromElement();
+  getLiveStreams({ targetId: videoId });
 });
