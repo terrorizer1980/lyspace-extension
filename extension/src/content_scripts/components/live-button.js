@@ -1,7 +1,3 @@
-const getLiveStreamUrl = ({ liveStream }) => {
-  return `https://youtube.com/watch/${liveStream?.videoId}`
-}
-
 /**
  * Return Lyspace button depending on the service.
  *
@@ -14,9 +10,9 @@ module.exports = ({ liveStream }) => {
   const button = document.createElement("div");
   const anchor = document.createElement("a");
 
-  anchor.setAttribute("href", getLiveStreamUrl({ liveStream }));
+  anchor.setAttribute("href", liveStream.url);
   anchor.setAttribute("target", "_blank");
-  anchor.style.textDecoration = "none"
+  anchor.style.textDecoration = "none";
 
   button.innerText += "LIVE NOW";
 

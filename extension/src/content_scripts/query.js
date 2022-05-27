@@ -1,15 +1,16 @@
-import { gql } from '@urql/core';
+import { gql } from "@urql/core";
 
 export const getLiveStreamsQuery = gql`
-  query getLiveStreams($channelId: String!) {
+  query getLiveStreams($targetId: String!) {
     liveStreamQuery {
-      livestreams(input: {channelId: $channelId, serviceName: YOUTUBE}) {
+      livestreams(
+        input: { targetId: $targetId, serviceName: YOUTUBE, targetType: VIDEO }
+      ) {
         id
         title
-        videoId
+        url
         serviceName
-        isLive
       }
     }
   }
-`
+`;
