@@ -8,8 +8,11 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         {
-          from: "./manifest.json",
-          to: "../dist",
+          from:
+            process.env.BROWSER_ENV === "CHROME"
+              ? "./manifest.v3.json"
+              : "./manifest.json",
+          to: "../dist/manifest.json",
         },
         {
           from: "./icons",

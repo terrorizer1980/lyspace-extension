@@ -13,3 +13,27 @@ browser.webRequest.onCompleted.addListener(
   { urls: ["*://*.youtube.com/youtubei/v1/player?*"] },
   []
 );
+
+// Just had to add for chrome because manifest v3 doesn't triggers .onComplete if service worker is inactive
+const shouldAddTabChangeListener = new Promise(async (resolve, reject) => {
+  try {
+    const details = await browser.runtime.getBrowserInfo();
+
+    if (details?.vendor === "Mozilla") {
+      return reject("Not from Mozilla");
+    }
+  } catch (err) {}
+
+  return resolve();
+});
+
+shouldAddTabChangeListener
+  .then(() => {
+    browser.tabs.onUpdated.addListener(() => {
+      // do nothing. it's just to activate service worker in chrome
+      // because `webRequest.onCompleted` doesn't get triggered when inactive
+    });
+  })
+  .catch((err) => {
+    console.log(err);
+  });
