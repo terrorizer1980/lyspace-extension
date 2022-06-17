@@ -3,7 +3,7 @@
   "name": "Lyspace",
   "version": "0.2",
   "description": "Just lyspace for now",
-  "permissions": ["*://*.youtube.com/*", "*://*.lyspace.co/*", "webRequest", "webRequestBlocking", "webNavigation"],
+  "permissions": ["*://*.youtube.com/*", "*://*.lyspace.co/*", "webRequest"],
   "content_scripts": [
     {
       "matches": ["*://*.youtube.com/*"],
