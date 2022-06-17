@@ -10,11 +10,16 @@ const client = createClient({
   exchanges: defaultExchanges,
 });
 
-const getVideoIdFromElement = () => {
+const getVideoIdFromAddressBar = () => {
   const videoIdRegex = RegExp("watch\\?v=(.*)&*", "g");
-  const videoId = videoIdRegex.exec(window.location.href)[1];
 
-  return videoId;
+  try {
+    const videoId = videoIdRegex.exec(window.location.href)[1];
+
+    return videoId;
+  } catch (err) {
+    console.log("Ignore the error:", err);
+  }
 };
 
 const getChannelNameElement = () => {
@@ -47,19 +52,21 @@ const removeExistingLiveNowButtons = () => {
 };
 
 const getLiveStreams = ({ targetId }) => {
-  client
-    .query(getLiveStreamsQuery, { targetId })
-    .toPromise()
-    .then((val) => {
-      if (val.data.liveStreamQuery.livestreams) {
-        const liveStream = val.data.liveStreamQuery.livestreams[0];
+  if (targetId) {
+    client
+      .query(getLiveStreamsQuery, { targetId })
+      .toPromise()
+      .then((val) => {
+        if (val.data.liveStreamQuery.livestreams) {
+          const liveStream = val.data.liveStreamQuery.livestreams[0];
 
-        addYouTubeLiveButton({ liveStream });
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+          addYouTubeLiveButton({ liveStream });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
 };
 
 browser.runtime.onMessage.addListener((message, sender) => {
@@ -67,7 +74,7 @@ browser.runtime.onMessage.addListener((message, sender) => {
     case "playerLoaded": {
       removeExistingLiveNowButtons();
 
-      const videoId = getVideoIdFromElement();
+      const videoId = getVideoIdFromAddressBar();
 
       getLiveStreams({ targetId: videoId });
 
@@ -82,6 +89,6 @@ browser.runtime.onMessage.addListener((message, sender) => {
 
 // If page is directly loaded, then take channelId from meta tags
 window.addEventListener("load", (_) => {
-  const videoId = getVideoIdFromElement();
+  const videoId = getVideoIdFromAddressBar();
   getLiveStreams({ targetId: videoId });
 });
