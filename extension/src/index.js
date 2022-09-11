@@ -20,7 +20,7 @@ const shouldAddTabChangeListener = new Promise(async (resolve, reject) => {
     const details = await browser.runtime.getBrowserInfo();
 
     if (details?.vendor === "Mozilla") {
-      return reject("Not from Mozilla");
+      return reject("It's Mozilla");
     }
   } catch (err) {}
 

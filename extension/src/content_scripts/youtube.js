@@ -59,8 +59,11 @@ const getLiveStreams = ({ targetId }) => {
       .then((val) => {
         if (val.data.liveStreamQuery.livestreams) {
           const liveStream = val.data.liveStreamQuery.livestreams[0];
+          const videoId = getVideoIdFromAddressBar();
 
-          addYouTubeLiveButton({ liveStream });
+          if (!liveStream?.url?.endsWith(videoId)) {
+            addYouTubeLiveButton({ liveStream });
+          }
         }
       })
       .catch((err) => {
